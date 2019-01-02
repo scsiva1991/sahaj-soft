@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { withRouter } from "react-router-dom";
-import { Button, Alert } from "reactstrap";
+import { Button, Alert, InputGroup, Input } from "reactstrap";
 import {v4 as uuidv4} from 'uuid';
 
 import Header from '../../components/Header';
 import Sidemenu from '../../components/Sidemenu';
 import Mailmenu from '../../components/Mailmenu';
 import Mail from '../../components/Mail';
-import { getItem, saveItem, deleteItem, getSentEmails } from '../../util/util';
+import { getItem, saveItem, deleteItem } from '../../util/util';
 import MailForm from '../../components/MailForm';
 
 class Mailbox extends Component {
@@ -185,25 +185,81 @@ class Mailbox extends Component {
                   }
                   <div className="row">
                     <div className="col">
-                      {
-                        currentMenu === 'inbox' ?
-                        <h2 className="menu-title">
-                          Inbox ({inboxEmails.length})
-                        </h2> :
-                        <h2 className="menu-title">
-                          Sent Mail ({sentEmails.length})
-                        </h2>
-                      }
+                      <div className="d-flex align-items-center justify-content-between">
+                        {
+                          currentMenu === 'inbox' ?
+                          <h2 className="menu-title">
+                            Inbox ({inboxEmails.length})
+                          </h2> :
+                          <h2 className="menu-title">
+                            Sent Mail ({sentEmails.length})
+                          </h2>
+                        }
+                        <div className="m-r-15">
+                          <InputGroup>
+                            <Input
+                              placeholder="Search here"
+                            />
+                            <Button onClick={this.togglePassword}>
+                              Search
+                            </Button>
+                          </InputGroup>
+                        </div>
+                      </div>
                       {
                         currentMenu === 'inbox' &&
-                        <Button
-                          color="secondary"
-                          className="delete"
-                          onClick={this.deleteEmails}
-                          outline
-                        >
-                          <i className="fa fa-trash-o" />
-                        </Button>
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div>
+                            <Button
+                              color="secondary"
+                              outline
+                              className="m-l-15"
+                            >
+                              <i className="fa fa-refresh" /> Refresh
+                            </Button>
+
+                            <Button
+                              color="secondary"
+                              className="m-l-15"
+                              outline
+                            >
+                              <i className="fa fa-eye" />
+                            </Button>
+
+                            <Button
+                              color="secondary"
+                              className="m-l-15"
+                              outline
+                            >
+                              <i className="fa fa-exclamation" />
+                            </Button>
+
+                            <Button
+                              color="secondary"
+                              className="delete"
+                              onClick={this.deleteEmails}
+                              outline
+                            >
+                              <i className="fa fa-trash-o" />
+                            </Button>
+                          </div>
+                          <div className="pull-right">
+                            <Button
+                              color="secondary"
+                              outline
+                            >
+                              <i className="fa fa-arrow-left" />
+                            </Button>
+
+                            <Button
+                              color="secondary"
+                              outline
+                              className="m-r-15"
+                            >
+                              <i className="fa fa-arrow-right" />
+                            </Button>
+                          </div>
+                        </div>
                       }                      
                     </div>
                   </div>

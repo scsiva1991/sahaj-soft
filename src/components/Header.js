@@ -9,6 +9,7 @@ const Header = (props) => (
       aria-hidden="true"
       onClick={props.toggleSideMenu}
     />
+    <span className="m-l-15">Search for something...</span>
     <Nav className="ml-auto">
       <NavItem>
         <NavLink>
@@ -16,6 +17,15 @@ const Header = (props) => (
             <i className="fa fa-envelope" aria-hidden="true">
             </i>
             <Badge color="secondary" className="count">{props.unreadCount}</Badge>
+          </span>
+        </NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink>
+          <span>
+            <i className="fa fa-bell" aria-hidden="true">
+            </i>
+            <Badge color="secondary" className="count">{5}</Badge>
           </span>
         </NavLink>
       </NavItem>

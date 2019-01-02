@@ -156,3 +156,11 @@ body {
 .static-menu {
   background: #323F53;
 }
+
+.m-l-15 {
+  margin-left: 15px;
+}
+
+.m-r-15 {
+  margin-right: 15px;
+}
