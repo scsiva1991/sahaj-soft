@@ -3,7 +3,7 @@ import moment from 'moment';
 
 const Mail = (props) => (
   <div
-    className="d-flex email-list-container align-items-center"
+    className={`d-flex email-list-container align-items-center ${props.email.isRead ? 'email-read' : ''}`}
     onClick={() => props.readEmail(props.email)}
   >
     <div className="col-3 d-flex align-items-center">

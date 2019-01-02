@@ -3,7 +3,7 @@ import { Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
 import { withRouter } from "react-router-dom";
 
 import './Login.css';
-import { constants, saveItem } from '../../util/util';
+import { constants, saveItem, getMockMails, getItem } from '../../util/util';
 
 class Login extends PureComponent {
   constructor(props) {
@@ -21,13 +21,26 @@ class Login extends PureComponent {
   handleSubmit = e => {
     const { email, password } = this.state;
     const { history } = this.props;
+    const mockEmails = getMockMails();
     e.preventDefault();
+
     if (!email || !password) {
       return;
     }
     if (password === constants.password) {
       saveItem('isLoggedIn', true);
-      saveItem('currentUser', email)
+      saveItem('currentUser', email);
+
+      const emails = JSON.parse(getItem('emails')) || {};
+
+      if (!emails[email] || !emails[email].isMockEmailAdded) {
+        const inboxEmails = emails[email] ? emails[email].inbox : [];
+        emails[email] = { isMockEmailAdded: true, inbox: [...inboxEmails, ...mockEmails], sent: [] }
+      }
+
+      saveItem('emails', JSON.stringify(emails));
+      
+
       history.push('/');
     }
   }

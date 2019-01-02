@@ -9,8 +9,6 @@ import { checkIsLoggedIn } from '../../util/util';
 import Mailbox from '../Mailbox/Mailbox';
 import Login from '../Login/Login';
 
-console.log(checkIsLoggedIn());
-
 const AuthRoute = ({ component: Component, ...props}) => (
   <Route
     {...props}

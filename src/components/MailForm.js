@@ -1,19 +1,22 @@
 import React, { Component } from 'react';
 import { FormGroup, Label, Input, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import Chips from 'react-chips';
+
+import CustomChip from './CustomChip';
+import { isValidEmail } from '../util/util';
 
 class MailForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      to: '',
-      cc: '',
+      to: [],
+      cc: [],
       subject: '',
       body: ''
     }
   }
 
   static getDerivedStateFromProps = (props) => {
-    console.log('***', props);
     if (props.email && props.email.to) {
       return {
         to: props.email.to,
@@ -32,6 +35,13 @@ class MailForm extends Component {
   sendEmail = () => {
     const { to, cc, subject, body } = this.state;
     this.props.sendEmail({ to, cc, subject, body });
+  }
+
+  onChange = (emails, key) => {
+    if (!isValidEmail(emails[emails.length - 1])) {
+      return;
+    }
+    this.setState({ [key]: emails });
   }
 
   render() {
@@ -56,22 +66,22 @@ class MailForm extends Component {
                 </FormGroup>
                 <FormGroup className="mg-t-20">
                   <Label for="to">To</Label>
-                  <Input
-                    type="email"
-                    name="to"
-                    id="to"
+                  <Chips
                     value={to}
-                    onChange={(e) => this.handleChange('to', e)}
+                    onChange={(e) => this.onChange(e, 'to')}
+                    placeholder={'Type an email address and press tab'}
+                    createChipKeys={[9, 13, 32]}
+                    renderChip={value => <CustomChip>{value}</CustomChip>}
                   />
                 </FormGroup>
                 <FormGroup>
                   <Label for="cc">Cc</Label>
-                  <Input
-                    type="email"
-                    name="cc"
-                    id="cc"
+                  <Chips
                     value={cc}
-                    onChange={(e) => this.handleChange('cc', e)}
+                    onChange={(e) => this.onChange(e, 'cc')}
+                    placeholder={'Type an email address and press tab'}
+                    createChipKeys={[9, 13, 32]}
+                    renderChip={value => <CustomChip>{value}</CustomChip>}
                   />
                 </FormGroup>
                 <FormGroup>

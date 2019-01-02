@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { withRouter } from "react-router-dom";
 import { Button, Alert } from "reactstrap";
+import {v4 as uuidv4} from 'uuid';
 
 import Header from '../../components/Header';
 import Sidemenu from '../../components/Sidemenu';
 import Mailmenu from '../../components/Mailmenu';
 import Mail from '../../components/Mail';
-import { getItem, getInboxEmails, saveItem, deleteItem, getSentEmails } from '../../util/util';
+import { getItem, saveItem, deleteItem, getSentEmails } from '../../util/util';
 import MailForm from '../../components/MailForm';
 
 class Mailbox extends Component {
@@ -28,19 +29,14 @@ class Mailbox extends Component {
   }
 
   componentDidMount = () => {
-    const emails = getInboxEmails();
-    const sentEmails = getSentEmails();
+    const emails = JSON.parse(getItem('emails'));
     const currentUser = getItem('currentUser');
 
     // To filter out all mock emails and emails sent to current user
-    const inboxEmails = emails.filter(email => {
-      return email.isMockEmail || email.to === currentUser
-    });
+    const inboxEmails = emails[currentUser].inbox;
 
     // To filter out emails sent by current user
-    const outEmails = sentEmails.filter(email => {
-      return email.from === currentUser
-    });
+    const outEmails = emails[currentUser].sent;
 
     this.setState({ inboxEmails, currentUser, sentEmails: outEmails }, () => {
       this.getUnreadCount()
@@ -66,16 +62,30 @@ class Mailbox extends Component {
   }
 
   sendEmail = email => {
-    let { inboxEmails, currentUser, sentEmails } = this.state;
-    const newEmail = {...email, isRead: false, deliveredAt: Date.now(), from: currentUser };
-    saveItem('emails', JSON.stringify([newEmail, ...inboxEmails]));
-    saveItem('sentEmails', JSON.stringify([newEmail, ...sentEmails]));
+    let { currentUser, sentEmails } = this.state;
+    const emails = JSON.parse(getItem('emails'));
+    const currentUserEmails = emails[currentUser];
+    const newEmail = {...email, isRead: false, deliveredAt: Date.now(), from: currentUser, id: uuidv4() };
+
+    currentUserEmails['sent'] = [newEmail, ...sentEmails];
+
+    // Create an email list for emails in to and cc
+    for (let e of [...email.to, ...email.cc]) {
+      let userEmails = emails[e] || {};
+      let userInboxEmails = userEmails['inbox'] ? userEmails['inbox'] : [];
+      userEmails['inbox'] = [newEmail, ...userInboxEmails];
+      emails[e] = userEmails;
+    }
+
+    saveItem('emails', JSON.stringify(emails));
+    this.setState({ sentEmails: [...currentUserEmails['sent']] });
     this.closeModal();
     this.showSuccessMessage();
   }
 
   readEmail = email => {
-    const { inboxEmails } = this.state;
+    const { inboxEmails, currentUser } = this.state;
+    const emails = JSON.parse(getItem('emails'));
     const markUnreadEmails = inboxEmails.map(inboxEmail => {
       if (email.id === inboxEmail.id) {
         return { ...inboxEmail, isRead: true }
@@ -84,7 +94,8 @@ class Mailbox extends Component {
     });
     this.setState({ inboxEmails: markUnreadEmails, selectedEmail: email, showModal: true }, () => {
       this.getUnreadCount();
-      saveItem('emails', JSON.stringify(markUnreadEmails));
+      emails[currentUser]['inbox'] = markUnreadEmails; 
+      saveItem('emails', JSON.stringify(emails));
     });
   }
 
@@ -108,11 +119,14 @@ class Mailbox extends Component {
   }
 
   deleteEmails = () => {
-    const { toDeleteEmails, inboxEmails } = this.state;
+    const { toDeleteEmails, inboxEmails, currentUser } = this.state;
+    const emails = JSON.parse(getItem('emails'));
+
     const filteredEmails = inboxEmails.filter(email => toDeleteEmails.indexOf(email.id) === -1);
     this.setState({ inboxEmails: filteredEmails }, () => {
       this.getUnreadCount();
-      saveItem('emails', JSON.stringify(filteredEmails));
+      emails[currentUser]['inbox'] = filteredEmails; 
+      saveItem('emails', JSON.stringify(emails));
     });
   }
 
@@ -141,7 +155,11 @@ class Mailbox extends Component {
     return (
       <div>
         <div className={`sidemenu-container ${isToggled ? 'sidemenu-toggled' : ''}`}>
-          <Sidemenu isToggled={isToggled} />
+          <Sidemenu
+            isToggled={isToggled}
+            unreadCount={unreadCount}
+            totalCount={inboxEmails.length}
+          />
         </div>
         <div className={`header-container ${isToggled ? 'header-toggled' : ''}`}>
           <Header
@@ -167,14 +185,26 @@ class Mailbox extends Component {
                   }
                   <div className="row">
                     <div className="col">
-                      <Button
-                        color="danger"
-                        className="delete"
-                        onClick={this.deleteEmails}
-                      >
-                        <i className="fa fa-trash-o" />
-                        Delete
-                      </Button>
+                      {
+                        currentMenu === 'inbox' ?
+                        <h2 className="menu-title">
+                          Inbox ({inboxEmails.length})
+                        </h2> :
+                        <h2 className="menu-title">
+                          Sent Mail ({sentEmails.length})
+                        </h2>
+                      }
+                      {
+                        currentMenu === 'inbox' &&
+                        <Button
+                          color="secondary"
+                          className="delete"
+                          onClick={this.deleteEmails}
+                          outline
+                        >
+                          <i className="fa fa-trash-o" />
+                        </Button>
+                      }                      
                     </div>
                   </div>
                   {
